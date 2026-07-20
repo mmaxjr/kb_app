@@ -7,7 +7,10 @@ source.dir = .
 source.include_exts = py,kv,png,jpg,atlas
 
 version = 0.1
-requirements = python3,kivy,kivymd,notion-client,cryptography
+# Versões fixas: o KivyMD 2.x reescreveu a API (MDRaisedButton, MDTopAppBar,
+# Snackbar etc. mudaram/sumiram) e quebra o app, que foi escrito contra a
+# API do KivyMD 1.x. Fixar evita que o build pegue uma versão incompatível.
+requirements = python3,kivy==2.3.1,kivymd==1.2.0,notion-client,cryptography,pillow
 
 orientation = portrait
 fullscreen = 0
