@@ -116,6 +116,46 @@ if _IMPORT_ERROR is None:
     ExceptionManager.add_handler(_NoteMaxExceptionHandler())
 
 
+def _calcular_insets_sistema():
+    """Retorna (topo_px, base_px) pra empurrar o conteúdo pra fora da barra
+    de status e da barra de navegação do Android.
+
+    A partir do Android 15 (API 35) o app não escolhe mais ficar "por
+    baixo" das barras do sistema -- isso passou a ser obrigatório
+    (edge-to-edge forçado), então sem esse ajuste manual os topos das
+    telas ficam colados/cortados atrás do relógio e os botões do rodapé
+    caem em cima da barra de gestos, difíceis de tocar. Foi exatamente
+    o que apareceu nos prints do usuário (título "Integrações" atrás do
+    relógio, botão "CONECTAR NOVA INTEGRAÇÃO" quase saindo da tela).
+
+    Tenta ler o inset real via WindowInsets (Android); se não conseguir
+    (desktop, ou qualquer falha ao chamar a API do Android), cai num
+    valor fixo razoável em vez de deixar tudo grudado na borda."""
+    from kivy.metrics import dp
+    from kivy.utils import platform
+
+    padrao = (dp(24), dp(24))
+    if platform != "android":
+        return padrao
+
+    try:
+        from jnius import autoclass
+
+        PythonActivity = autoclass("org.kivy.android.PythonActivity")
+        activity = PythonActivity.mActivity
+        decor_view = activity.getWindow().getDecorView()
+        insets = decor_view.getRootWindowInsets()
+        if insets is None:
+            return padrao
+        topo = insets.getSystemWindowInsetTop()
+        base = insets.getSystemWindowInsetBottom()
+        if topo <= 0 and base <= 0:
+            return padrao
+        return (float(topo), float(base))
+    except Exception:
+        return padrao
+
+
 def _register_brand_fonts():
     """Registra Space Grotesk / JetBrains Mono se os .ttf existirem no
     build. Retorna os nomes de fonte a usar (o nome custom se registrou
@@ -200,6 +240,12 @@ else:
             self.theme_cls.theme_style = "Dark"
             self.theme_cls.primary_palette = "Teal"
             Window.clearcolor = COLORS["bg"]
+
+            # Espaço reservado pra barra de status / barra de navegação do
+            # Android (ver _calcular_insets_sistema) -- os .kv usam
+            # app.inset_top / app.inset_bottom pra empurrar o conteúdo pra
+            # fora dessas áreas.
+            self.inset_top, self.inset_bottom = _calcular_insets_sistema()
 
             # Serviços compartilhados entre todas as telas. Os arquivos de
             # dados (senha mestra criptografada e cache SQLite) usam

@@ -1,10 +1,12 @@
 #:import COLORS theme.COLORS
+#:import dp kivy.metrics.dp
 
 <TicketDetailScreen>:
     md_bg_color: COLORS['bg']
 
     MDBoxLayout:
         orientation: "vertical"
+        padding: 0, app.inset_top, 0, 0
 
         MDTopAppBar:
             title: "Detalhe da nota"
@@ -13,7 +15,7 @@
         ScrollView:
             MDBoxLayout:
                 orientation: "vertical"
-                padding: "16dp"
+                padding: dp(16), dp(16), dp(16), dp(16) + app.inset_bottom
                 spacing: "12dp"
                 size_hint_y: None
                 height: self.minimum_height

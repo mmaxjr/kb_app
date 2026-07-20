@@ -1,4 +1,5 @@
 #:import COLORS theme.COLORS
+#:import dp kivy.metrics.dp
 
 <LockScreen>:
     md_bg_color: COLORS['bg']
@@ -8,7 +9,7 @@
 
         MDBoxLayout:
             orientation: "vertical"
-            padding: "32dp", "28dp", "32dp", "24dp"
+            padding: dp(32), dp(28) + app.inset_top, dp(32), dp(24) + app.inset_bottom
             spacing: "14dp"
             size_hint_y: None
             height: self.minimum_height

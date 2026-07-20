@@ -1,4 +1,5 @@
 #:import COLORS theme.COLORS
+#:import dp kivy.metrics.dp
 
 <IntegrationCard>:
     orientation: "horizontal"
@@ -60,6 +61,7 @@
 
     MDBoxLayout:
         orientation: "vertical"
+        padding: 0, app.inset_top, 0, 0
 
         MDTopAppBar:
             title: "Integrações"
@@ -114,8 +116,8 @@
 
         MDBoxLayout:
             size_hint_y: None
-            height: "64dp"
-            padding: "16dp", "8dp"
+            height: dp(64) + app.inset_bottom
+            padding: dp(16), dp(8), dp(16), dp(8) + app.inset_bottom
 
             MDRaisedButton:
                 text: "CONECTAR NOVA INTEGRAÇÃO"
