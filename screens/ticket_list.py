@@ -46,7 +46,12 @@ class TicketListScreen(MDScreen):
 
         secondary = ticket.categoria or ""
         if ticket.local_only:
-            secondary = (secondary + "  ·  somente no dispositivo").strip("  ·  ")
+            status = "somente no dispositivo"
+        elif ticket.sincronizado:
+            status = "sincronizado com o Notion"
+        else:
+            status = "aguardando sincronizar"
+        secondary = f"{secondary}  ·  {status}" if secondary else status
 
         item = TwoLineListItem(
             text=ticket.titulo or "(sem título)",

@@ -43,8 +43,8 @@
                     hint_text: "Tags (separadas por vírgula)"
 
                 MDLabel:
-                    text: "Salva somente no dispositivo" if root.local_only else "Sincronizada com o Notion"
-                    color: COLORS['accent'] if root.local_only else COLORS['text_dim']
+                    text: "Salva somente no dispositivo" if root.local_only else ("Sincronizada com o Notion" if root.sincronizado else "Salva no dispositivo -- aguardando conexão para sincronizar com o Notion")
+                    color: COLORS['text_dim'] if root.local_only else (COLORS['accent'] if root.sincronizado else COLORS['alert'])
                     font_size: "12sp"
                     size_hint_y: None
                     height: self.texture_size[1]

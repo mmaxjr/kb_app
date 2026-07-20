@@ -60,8 +60,17 @@ class TicketCreateScreen(MDScreen):
             ticket.id = pagina["id"]
             ticket.sincronizado = True
             cache_service.save_local(ticket)
+            # Só aqui dá pra garantir que realmente chegou no Notion --
+            # o aviso de "sincronizando..." mostrado na hora de salvar não
+            # prova que deu certo, então confirma com um segundo aviso
+            # quando o envio termina de verdade.
+            Clock.schedule_once(lambda dt: mostrar_aviso("Sincronizado com o Notion"))
         except Exception:
-            pass  # continua marcado como não sincronizado; tenta de novo depois
+            # Continua marcado como não sincronizado (sincronizado=False
+            # no cache local) -- a nota não se perde, só não subiu ainda.
+            Clock.schedule_once(
+                lambda dt: mostrar_aviso("Sem conexão: nota ficou salva só no dispositivo por enquanto")
+            )
 
     def _limpar_campos(self):
         self.ids.titulo_field.text = ""

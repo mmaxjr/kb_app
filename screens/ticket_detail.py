@@ -24,6 +24,7 @@ from utils.ui import mostrar_aviso
 class TicketDetailScreen(MDScreen):
     ticket_id = StringProperty("")
     local_only = BooleanProperty(False)
+    sincronizado = BooleanProperty(True)
 
     def on_pre_enter(self, *args):
         self.carregar_ticket()
@@ -33,6 +34,11 @@ class TicketDetailScreen(MDScreen):
         tickets = {t.id: t for t in cache_service.get_all()}
         ticket = tickets.get(self.ticket_id)
         self.local_only = bool(ticket.local_only) if ticket else False
+        # Mostra o status real: "sincronizado" só vira True quando o
+        # Notion de fato confirmou o envio (ver ticket_create.py /
+        # cache_service.py) -- antes disso a nota existe só no cache
+        # local, mesmo não sendo "somente no dispositivo".
+        self.sincronizado = bool(ticket.sincronizado) if ticket else True
         if ticket:
             self.ids.titulo_field.text = ticket.titulo
             self.ids.descricao_field.text = ticket.descricao

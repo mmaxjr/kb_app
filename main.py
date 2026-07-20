@@ -241,6 +241,14 @@ else:
             self.theme_cls.primary_palette = "Teal"
             Window.clearcolor = COLORS["bg"]
 
+            # Sem isso, quando o teclado abre no Android ele só sobrepõe a
+            # tela por cima -- os campos de baixo (token, botão "SALVAR E
+            # CONTINUAR") ficam escondidos atrás do teclado, sem como
+            # rolar até eles. "below_target" faz o Kivy empurrar a janela
+            # pra cima o suficiente pra manter o campo em foco sempre
+            # visível acima do teclado.
+            Window.softinput_mode = "below_target"
+
             # Espaço reservado pra barra de status / barra de navegação do
             # Android (ver _calcular_insets_sistema) -- os .kv usam
             # app.inset_top / app.inset_bottom pra empurrar o conteúdo pra
