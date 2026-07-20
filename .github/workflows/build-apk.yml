@@ -18,11 +18,19 @@ jobs:
         with:
           python-version: "3.10"
 
+      # Força o Java 17 como padrão (o runner tem várias versões, e o
+      # Android Gradle Plugin usado pela API 36 exige Java 17+).
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config \
+            git zip unzip python3-pip autoconf libtool pkg-config \
             zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake \
             libffi-dev libssl-dev automake build-essential
 
