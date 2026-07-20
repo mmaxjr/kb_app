@@ -39,6 +39,19 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.36
 
+      # Baixa as fontes da marca (Space Grotesk / JetBrains Mono) para o
+      # app usar a tipografia correta. Best-effort: se a rede falhar, o
+      # app roda igual, só com a fonte padrão (ver main.py).
+      - name: Download brand fonts
+        continue-on-error: true
+        run: |
+          mkdir -p assets/fonts
+          curl -sL -o assets/fonts/SpaceGrotesk.ttf \
+            "https://github.com/google/fonts/raw/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf" || true
+          curl -sL -o assets/fonts/JetBrainsMono.ttf \
+            "https://github.com/google/fonts/raw/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf" || true
+          ls -la assets/fonts/
+
       - name: Cache buildozer global directory
         uses: actions/cache@v4
         with:
@@ -58,5 +71,5 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kbapp-debug-apk
+          name: notemax-debug-apk
           path: bin/*.apk

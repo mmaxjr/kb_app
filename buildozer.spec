@@ -1,10 +1,10 @@
 [app]
-title = KB App
-package.name = kbapp
-package.domain = org.kbapp
+title = NOTE MAX
+package.name = notemax
+package.domain = org.notemax
 
 source.dir = .
-source.include_exts = py,kv,png,jpg,atlas
+source.include_exts = py,kv,png,jpg,atlas,ttf
 
 version = 0.1
 # Versões fixas: o KivyMD 2.x reescreveu a API (MDRaisedButton, MDTopAppBar,
@@ -14,6 +14,12 @@ requirements = python3,kivy==2.3.1,kivymd==1.2.0,notion-client,cryptography,pill
 
 orientation = portrait
 fullscreen = 0
+
+# Ícone do app e tela de splash nativa (mostrada pelo Android antes do
+# Python iniciar), com a identidade visual do NOTE MAX.
+icon.filename = %(source.dir)s/assets/icon.png
+presplash.filename = %(source.dir)s/assets/presplash.png
+android.presplash_color = #05070A
 
 android.permissions = INTERNET
 

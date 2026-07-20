@@ -1,15 +1,55 @@
+#:import COLORS theme.COLORS
+
 <LockScreen>:
+    md_bg_color: COLORS['bg']
+
     MDBoxLayout:
         orientation: "vertical"
         padding: "32dp"
-        spacing: "16dp"
+        spacing: "20dp"
+
+        Widget:
+            size_hint_y: 0.15
+
+        Image:
+            source: "assets/icon.png"
+            size_hint: None, None
+            size: "88dp", "88dp"
+            pos_hint: {"center_x": .5}
+
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: "44dp"
+            pos_hint: {"center_x": .5}
+
+            MDLabel:
+                text: "NOTE"
+                halign: "right"
+                font_style: "H4"
+                bold: True
+                font_name: app.font_display
+                color: COLORS['text_bright']
+
+            MDLabel:
+                text: "MAX"
+                halign: "left"
+                font_style: "H4"
+                bold: True
+                font_name: app.font_display
+                color: COLORS['accent']
 
         MDLabel:
-            text: "KB App"
+            text: "KNOWLEDGE BASE"
             halign: "center"
-            font_style: "H4"
+            font_name: app.font_mono
+            font_size: "12sp"
+            color: COLORS['text_dim']
             size_hint_y: None
             height: self.texture_size[1]
+
+        Widget:
+            size_hint_y: 0.1
 
         # --- Desbloquear (quando já existe token salvo) ---
         MDBoxLayout:
@@ -23,7 +63,7 @@
                 password: True
 
             MDRaisedButton:
-                text: "Desbloquear"
+                text: "DESBLOQUEAR"
                 pos_hint: {"center_x": .5}
                 on_release: root.unlock(password_field.text)
 
@@ -36,6 +76,10 @@
             MDLabel:
                 text: "Primeiro acesso: cole seu token de integration do Notion e crie uma senha mestra"
                 halign: "center"
+                color: COLORS['text_dim']
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1]
 
             MDTextField:
                 id: token_field
@@ -53,6 +97,6 @@
                 password: True
 
             MDRaisedButton:
-                text: "Salvar e continuar"
+                text: "SALVAR E CONTINUAR"
                 pos_hint: {"center_x": .5}
                 on_release: root.setup(token_field.text, new_password_field.text, new_password_confirm_field.text)

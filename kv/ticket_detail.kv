@@ -1,9 +1,13 @@
+#:import COLORS theme.COLORS
+
 <TicketDetailScreen>:
+    md_bg_color: COLORS['bg']
+
     MDBoxLayout:
         orientation: "vertical"
 
         MDTopAppBar:
-            title: "Detalhe do ticket"
+            title: "Detalhe da nota"
             left_action_items: [["arrow-left", lambda x: root.voltar()]]
 
         ScrollView:
@@ -37,6 +41,6 @@
                     hint_text: "Tags (separadas por vírgula)"
 
                 MDRaisedButton:
-                    text: "Salvar alterações"
+                    text: "SALVAR ALTERAÇÕES"
                     pos_hint: {"center_x": .5}
                     on_release: root.salvar_edicao()

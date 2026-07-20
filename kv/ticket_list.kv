@@ -1,9 +1,13 @@
+#:import COLORS theme.COLORS
+
 <TicketListScreen>:
+    md_bg_color: COLORS['bg']
+
     MDBoxLayout:
         orientation: "vertical"
 
         MDTopAppBar:
-            title: "Tickets"
+            title: "NOTE MAX"
             right_action_items: [["plus", lambda x: root.ir_para_criar()]]
 
         MDBoxLayout:
@@ -13,7 +17,7 @@
 
             MDTextField:
                 id: busca_field
-                hint_text: "Buscar tickets"
+                hint_text: "Buscar notas"
                 on_text_validate: root.buscar(self.text)
 
             MDIconButton:

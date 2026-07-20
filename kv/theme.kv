@@ -1,0 +1,29 @@
+#:import COLORS theme.COLORS
+
+# Regras globais: aplicam-se a toda instância dessas classes no app,
+# então as telas não precisam repetir cor em cada campo/botão.
+
+<MDTextField>:
+    text_color_normal: COLORS['text']
+    text_color_focus: COLORS['text']
+    hint_text_color_normal: COLORS['text_dim']
+    hint_text_color_focus: COLORS['accent']
+    line_color_normal: COLORS['border']
+    line_color_focus: COLORS['accent']
+
+<MDRaisedButton>:
+    md_bg_color: COLORS['accent']
+    text_color: COLORS['bg']
+    font_name: app.font_mono
+
+<MDTopAppBar>:
+    md_bg_color: COLORS['surface']
+    # Nota: NÃO defina specific_text_color aqui. No KivyMD 1.2.0 isso
+    # dispara update_action_bar_text_colors() durante a construção do
+    # widget, antes de self.ids existir, e derruba o app
+    # (AttributeError: 'super' object has no attribute '__getattr__').
+    # A cor do título já fica legível por padrão com theme_style "Dark".
+
+<MDIconButton>:
+    theme_text_color: "Custom"
+    text_color: COLORS['accent']

@@ -1,9 +1,13 @@
+#:import COLORS theme.COLORS
+
 <TicketCreateScreen>:
+    md_bg_color: COLORS['bg']
+
     MDBoxLayout:
         orientation: "vertical"
 
         MDTopAppBar:
-            title: "Novo ticket"
+            title: "Nova nota"
             left_action_items: [["arrow-left", lambda x: root.cancelar()]]
 
         ScrollView:
@@ -37,6 +41,6 @@
                     hint_text: "Tags (separadas por vírgula)"
 
                 MDRaisedButton:
-                    text: "Criar ticket"
+                    text: "CRIAR NOTA"
                     pos_hint: {"center_x": .5}
                     on_release: root.criar_ticket()
