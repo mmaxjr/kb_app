@@ -1,0 +1,58 @@
+<LockScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "32dp"
+        spacing: "16dp"
+
+        MDLabel:
+            text: "KB App"
+            halign: "center"
+            font_style: "H4"
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        # --- Desbloquear (quando já existe token salvo) ---
+        MDBoxLayout:
+            id: unlock_box
+            orientation: "vertical"
+            spacing: "16dp"
+
+            MDTextField:
+                id: password_field
+                hint_text: "Senha mestra"
+                password: True
+
+            MDRaisedButton:
+                text: "Desbloquear"
+                pos_hint: {"center_x": .5}
+                on_release: root.unlock(password_field.text)
+
+        # --- Primeiro acesso (configurar token + senha) ---
+        MDBoxLayout:
+            id: setup_box
+            orientation: "vertical"
+            spacing: "16dp"
+
+            MDLabel:
+                text: "Primeiro acesso: cole seu token de integration do Notion e crie uma senha mestra"
+                halign: "center"
+
+            MDTextField:
+                id: token_field
+                hint_text: "Token de integration do Notion"
+                password: True
+
+            MDTextField:
+                id: new_password_field
+                hint_text: "Nova senha mestra"
+                password: True
+
+            MDTextField:
+                id: new_password_confirm_field
+                hint_text: "Confirme a senha mestra"
+                password: True
+
+            MDRaisedButton:
+                text: "Salvar e continuar"
+                pos_hint: {"center_x": .5}
+                on_release: root.setup(token_field.text, new_password_field.text, new_password_confirm_field.text)

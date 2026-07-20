@@ -1,0 +1,42 @@
+<TicketCreateScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+
+        MDTopAppBar:
+            title: "Novo ticket"
+            left_action_items: [["arrow-left", lambda x: root.cancelar()]]
+
+        ScrollView:
+            MDBoxLayout:
+                orientation: "vertical"
+                padding: "16dp"
+                spacing: "12dp"
+                size_hint_y: None
+                height: self.minimum_height
+
+                MDTextField:
+                    id: titulo_field
+                    hint_text: "Título"
+
+                MDTextField:
+                    id: descricao_field
+                    hint_text: "Descrição"
+                    multiline: True
+
+                MDTextField:
+                    id: solucao_field
+                    hint_text: "Solução"
+                    multiline: True
+
+                MDTextField:
+                    id: categoria_field
+                    hint_text: "Categoria"
+
+                MDTextField:
+                    id: tags_field
+                    hint_text: "Tags (separadas por vírgula)"
+
+                MDRaisedButton:
+                    text: "Criar ticket"
+                    pos_hint: {"center_x": .5}
+                    on_release: root.criar_ticket()

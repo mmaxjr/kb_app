@@ -1,0 +1,25 @@
+<TicketListScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+
+        MDTopAppBar:
+            title: "Tickets"
+            right_action_items: [["plus", lambda x: root.ir_para_criar()]]
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: "56dp"
+            padding: "8dp"
+
+            MDTextField:
+                id: busca_field
+                hint_text: "Buscar tickets"
+                on_text_validate: root.buscar(self.text)
+
+            MDIconButton:
+                icon: "magnify"
+                on_release: root.buscar(busca_field.text)
+
+        ScrollView:
+            MDList:
+                id: tickets_list
