@@ -46,6 +46,7 @@ try:
     from kivymd.uix.label import MDLabel
     from kivymd.uix.screenmanager import MDScreenManager
 
+    from screens.splash_screen import SplashScreen
     from screens.lock_screen import LockScreen
     from screens.ticket_list import TicketListScreen
     from screens.ticket_detail import TicketDetailScreen
@@ -164,6 +165,7 @@ else:
             # Carrega os arquivos .kv (theme.kv primeiro: define as regras
             # globais de cor/fonte usadas pelos demais)
             Builder.load_file("kv/theme.kv")
+            Builder.load_file("kv/splash_screen.kv")
             Builder.load_file("kv/lock_screen.kv")
             Builder.load_file("kv/ticket_list.kv")
             Builder.load_file("kv/ticket_detail.kv")
@@ -177,12 +179,15 @@ else:
             lock = LockScreen(name="lock_screen")
             lock.crypto_service = self.crypto_service
 
+            sm.add_widget(SplashScreen(name="splash_screen"))
             sm.add_widget(lock)
             sm.add_widget(TicketListScreen(name="ticket_list"))
             sm.add_widget(TicketDetailScreen(name="ticket_detail"))
             sm.add_widget(TicketCreateScreen(name="ticket_create"))
 
-            sm.current = "lock_screen"
+            # A splash animada (dentro do app) aparece primeiro e some
+            # sozinha depois de ~1.6s, indo pra tela de senha.
+            sm.current = "splash_screen"
             return sm
 
 

@@ -6,10 +6,10 @@
     MDBoxLayout:
         orientation: "vertical"
         padding: "32dp"
-        spacing: "20dp"
+        spacing: "16dp"
 
         Widget:
-            size_hint_y: 0.15
+            size_hint_y: 0.06
 
         Image:
             source: "assets/icon.png"
@@ -49,7 +49,7 @@
             height: self.texture_size[1]
 
         Widget:
-            size_hint_y: 0.1
+            size_hint_y: 0.04
 
         # --- Desbloquear (quando já existe token salvo) ---
         MDBoxLayout:
@@ -67,24 +67,19 @@
                 pos_hint: {"center_x": .5}
                 on_release: root.unlock(password_field.text)
 
-        # --- Primeiro acesso (configurar token + senha) ---
+        # --- Primeiro acesso (configurar senha; token do Notion é opcional) ---
         MDBoxLayout:
             id: setup_box
             orientation: "vertical"
-            spacing: "16dp"
+            spacing: "14dp"
 
             MDLabel:
-                text: "Primeiro acesso: cole seu token de integration do Notion e crie uma senha mestra"
+                text: "Primeiro acesso: crie uma senha mestra. O token do Notion é opcional -- sem ele, o app funciona só com armazenamento no dispositivo."
                 halign: "center"
                 color: COLORS['text_dim']
                 text_size: self.width, None
                 size_hint_y: None
                 height: self.texture_size[1]
-
-            MDTextField:
-                id: token_field
-                hint_text: "Token de integration do Notion"
-                password: True
 
             MDTextField:
                 id: new_password_field
@@ -94,6 +89,11 @@
             MDTextField:
                 id: new_password_confirm_field
                 hint_text: "Confirme a senha mestra"
+                password: True
+
+            MDTextField:
+                id: token_field
+                hint_text: "Token de integration do Notion (opcional)"
                 password: True
 
             MDRaisedButton:

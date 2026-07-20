@@ -1,0 +1,52 @@
+#:import COLORS theme.COLORS
+
+<SplashScreen>:
+    md_bg_color: COLORS['bg']
+
+    FloatLayout:
+        Image:
+            id: splash_icon
+            source: "assets/icon.png"
+            size_hint: None, None
+            size: "96dp", "96dp"
+            pos_hint: {"center_x": .5, "center_y": .58}
+            opacity: 1
+
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: None, None
+            size: "220dp", "40dp"
+            pos_hint: {"center_x": .5, "center_y": .46}
+
+            MDLabel:
+                text: "NOTE"
+                halign: "right"
+                font_style: "H5"
+                bold: True
+                font_name: app.font_display
+                color: COLORS['text_bright']
+
+            MDLabel:
+                text: "MAX"
+                halign: "left"
+                font_style: "H5"
+                bold: True
+                font_name: app.font_display
+                color: COLORS['accent']
+
+        MDLabel:
+            id: splash_status
+            text: "CARREGANDO DADOS_"
+            halign: "center"
+            font_name: app.font_mono
+            font_size: "11sp"
+            color: COLORS['text_dim']
+            size_hint: None, None
+            size: "220dp", "20dp"
+            pos_hint: {"center_x": .5, "center_y": .38}
+
+        LoadingBar:
+            id: loading_bar
+            size_hint: None, None
+            size: "180dp", "4dp"
+            pos_hint: {"center_x": .5, "center_y": .34}
