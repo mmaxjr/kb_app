@@ -1,4 +1,4 @@
 kivy
 kivymd
 notion-client
-cryptography
+pyaes
