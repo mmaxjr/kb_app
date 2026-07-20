@@ -4,11 +4,13 @@ Carrega o App KivyMD, registra as telas no ScreenManager
 e injeta os serviços (Notion, crypto, cache) em cada tela.
 """
 import os
+import traceback
 
 from kivy.core.text import LabelBase
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivymd.app import MDApp
+from kivymd.uix.label import MDLabel
 from kivymd.uix.screenmanager import MDScreenManager
 
 from screens.lock_screen import LockScreen
@@ -55,6 +57,36 @@ def _register_brand_fonts():
 
 class NoteMaxApp(MDApp):
     def build(self):
+        # Qualquer exceção aqui, antes tirava o app do ar sem explicação
+        # nenhuma (só fechava). Agora mostra o erro em tela e grava um
+        # arquivo de log, pra dar pra diagnosticar sem precisar de adb.
+        try:
+            return self._build_real()
+        except Exception:
+            tb = traceback.format_exc()
+            self._salvar_log_erro(tb)
+            return MDLabel(
+                text=(
+                    "Erro ao iniciar o NOTE MAX:\n\n"
+                    + tb
+                    + "\n\nEsse texto também foi salvo em "
+                    + "Android/data/org.notemax.notemax/files/crash_log.txt"
+                ),
+                halign="left",
+                valign="top",
+                theme_text_color="Custom",
+                text_color=(1, 1, 1, 1),
+            )
+
+    def _salvar_log_erro(self, tb: str):
+        try:
+            path = os.path.join(self.user_data_dir, "crash_log.txt")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(tb)
+        except Exception:
+            pass  # se nem isso funcionar, não tem mais o que fazer
+
+    def _build_real(self):
         self.title = "NOTE MAX"
         self.colors = COLORS
         self.font_display, self.font_mono = _register_brand_fonts()
@@ -63,10 +95,21 @@ class NoteMaxApp(MDApp):
         self.theme_cls.primary_palette = "Teal"
         Window.clearcolor = COLORS["bg"]
 
-        # Serviços compartilhados entre todas as telas
-        self.crypto_service = CryptoService()
+        # Serviços compartilhados entre todas as telas. Os arquivos de
+        # dados (senha mestra criptografada e cache SQLite) usam
+        # user_data_dir — a pasta privada do app garantida gravável
+        # pelo Kivy em qualquer plataforma. Um caminho relativo tipo
+        # "cache.db" pode cair num diretório sem suporte a lock de
+        # arquivo no Android, causando "disk I/O error" e derrubando
+        # o app assim que a tela de loading aparece.
+        os.makedirs(self.user_data_dir, exist_ok=True)
+        self.crypto_service = CryptoService(
+            store_path=os.path.join(self.user_data_dir, "secure_data.json")
+        )
         self.notion_service = NotionService()
-        self.cache_service = CacheService()
+        self.cache_service = CacheService(
+            db_path=os.path.join(self.user_data_dir, "cache.db")
+        )
 
         # Carrega os arquivos .kv (theme.kv primeiro: define as regras
         # globais de cor/fonte usadas pelos demais)
