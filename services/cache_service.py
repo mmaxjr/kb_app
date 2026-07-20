@@ -43,27 +43,30 @@ class CacheService:
                 categoria TEXT,
                 tags TEXT,
                 sincronizado INTEGER DEFAULT 0,
-                local_only INTEGER DEFAULT 0
+                local_only INTEGER DEFAULT 0,
+                criado_em TEXT DEFAULT ''
             )
             """
         )
         self.conn.commit()
 
     def _migrate(self):
-        """Adiciona a coluna local_only em bancos criados antes dela
-        existir (installs anteriores do app), sem apagar dados."""
-        try:
-            self.conn.execute(
-                "ALTER TABLE tickets ADD COLUMN local_only INTEGER DEFAULT 0"
-            )
-            self.conn.commit()
-        except sqlite3.OperationalError:
-            pass  # coluna já existe
+        """Adiciona colunas em bancos criados antes delas existirem
+        (installs anteriores do app), sem apagar dados."""
+        for coluna_sql in (
+            "ALTER TABLE tickets ADD COLUMN local_only INTEGER DEFAULT 0",
+            "ALTER TABLE tickets ADD COLUMN criado_em TEXT DEFAULT ''",
+        ):
+            try:
+                self.conn.execute(coluna_sql)
+                self.conn.commit()
+            except sqlite3.OperationalError:
+                pass  # coluna já existe
 
     def save_local(self, ticket: Ticket) -> None:
         with self._lock:
             self.conn.execute(
-                "INSERT OR REPLACE INTO tickets VALUES (?,?,?,?,?,?,?,?)",
+                "INSERT OR REPLACE INTO tickets VALUES (?,?,?,?,?,?,?,?,?)",
                 (
                     ticket.id,
                     ticket.titulo,
@@ -73,6 +76,7 @@ class CacheService:
                     ",".join(ticket.tags),
                     int(ticket.sincronizado),
                     int(ticket.local_only),
+                    ticket.criado_em,
                 ),
             )
             self.conn.commit()
@@ -81,7 +85,7 @@ class CacheService:
         with self._lock:
             rows = self.conn.execute(
                 "SELECT id, titulo, descricao, solucao, categoria, tags, "
-                "sincronizado, local_only FROM tickets"
+                "sincronizado, local_only, criado_em FROM tickets"
             ).fetchall()
         return [Ticket.from_row(r) for r in rows]
 
@@ -90,7 +94,7 @@ class CacheService:
         with self._lock:
             rows = self.conn.execute(
                 "SELECT id, titulo, descricao, solucao, categoria, tags, "
-                "sincronizado, local_only FROM tickets "
+                "sincronizado, local_only, criado_em FROM tickets "
                 "WHERE sincronizado = 0 AND local_only = 0"
             ).fetchall()
         return [Ticket.from_row(r) for r in rows]
@@ -100,7 +104,7 @@ class CacheService:
         with self._lock:
             rows = self.conn.execute(
                 "SELECT id, titulo, descricao, solucao, categoria, tags, "
-                "sincronizado, local_only FROM tickets WHERE local_only = 1"
+                "sincronizado, local_only, criado_em FROM tickets WHERE local_only = 1"
             ).fetchall()
         return [Ticket.from_row(r) for r in rows]
 

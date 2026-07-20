@@ -8,6 +8,7 @@ Dois modos, escolhidos pelo switch "Salvar somente no dispositivo":
 """
 import threading
 import uuid
+from datetime import datetime, timezone
 
 from kivy.clock import Clock
 from kivymd.uix.screen import MDScreen
@@ -34,6 +35,7 @@ class TicketCreateScreen(MDScreen):
             tags=[t.strip() for t in self.ids.tags_field.text.split(",") if t.strip()],
             sincronizado=salvar_so_no_dispositivo,  # local_only nunca fica "pendente"
             local_only=salvar_so_no_dispositivo,
+            criado_em=datetime.now(timezone.utc).isoformat(),
         )
 
         self.manager.cache_service.save_local(ticket)

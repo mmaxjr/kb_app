@@ -113,9 +113,15 @@
                     size_hint_y: None
                     height: "52dp"
 
+                MDTextField:
+                    id: database_id_field
+                    hint_text: "ID do banco de dados do Notion (necessário p/ sincronizar)"
+                    size_hint_y: None
+                    height: "52dp"
+
                 MDRaisedButton:
                     text: "SALVAR E CONTINUAR"
                     pos_hint: {"center_x": .5}
                     size_hint_y: None
                     height: "44dp"
-                    on_release: root.setup(token_field.text, new_password_field.text, new_password_confirm_field.text)
+                    on_release: root.setup(token_field.text, database_id_field.text, new_password_field.text, new_password_confirm_field.text)

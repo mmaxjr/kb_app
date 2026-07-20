@@ -43,6 +43,14 @@ class LockScreen(MDScreen):
             return
         if token:
             self.manager.notion_service.set_token(token)
+            # O database_id não é segredo (fica no integrations.json, não
+            # criptografado) -- sem reaplicar ele aqui a cada desbloqueio,
+            # o NotionService voltaria a ficar sem destino nenhum e toda
+            # sincronização falharia de novo.
+            config_notion = self.manager.integrations_service.get_config("notion")
+            database_id = config_notion.get("database_id", "")
+            if database_id:
+                self.manager.notion_service.set_database_id(database_id)
         # Guarda a senha mestra em memória pelo resto da sessão -- é o que
         # permite salvar NOVOS segredos depois (ex.: conectar o Supabase
         # na tela de Integrações) sem pedir a senha de novo a cada ação.
@@ -50,8 +58,9 @@ class LockScreen(MDScreen):
         self.manager.master_password = password
         self.manager.current = "ticket_list"
 
-    def setup(self, token: str, password: str, password_confirm: str):
+    def setup(self, token: str, database_id: str, password: str, password_confirm: str):
         token = (token or "").strip()
+        database_id = (database_id or "").strip()
 
         if not password:
             mostrar_aviso("Crie uma senha mestra")
@@ -67,7 +76,15 @@ class LockScreen(MDScreen):
             self.manager.notion_service.set_token(token)
             self.manager.integrations_service.set_conectado("notion", True)
             self.manager.integrations_service.set_destino_ativo("notion")
-            mostrar_aviso("Configurado com o Notion")
+            if database_id:
+                self.manager.notion_service.set_database_id(database_id)
+                self.manager.integrations_service.set_config("notion", database_id=database_id)
+                mostrar_aviso("Configurado com o Notion")
+            else:
+                mostrar_aviso(
+                    "Token salvo, mas falta o ID do banco de dados -- "
+                    "sem ele a sincronização não funciona. Configure em Integrações."
+                )
         else:
             mostrar_aviso("Configurado para uso somente no dispositivo")
 

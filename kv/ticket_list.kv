@@ -1,30 +1,198 @@
 #:import COLORS theme.COLORS
+#:import dp kivy.metrics.dp
+
+<CategoriaChip>:
+    size_hint: None, None
+    height: "32dp"
+    width: max(chip_label.texture_size[0] + dp(24), dp(56))
+    padding: "14dp", "4dp"
+    radius: [16, 16, 16, 16]
+    md_bg_color: COLORS['accent'] if root.selecionado else COLORS['surface']
+    line_color: (0, 0, 0, 0) if root.selecionado else COLORS['accent']
+    line_width: "1dp"
+    ripple_behavior: True
+
+    MDLabel:
+        id: chip_label
+        text: root.nome
+        halign: "center"
+        valign: "middle"
+        bold: True
+        font_size: "12sp"
+        color: COLORS['bg'] if root.selecionado else COLORS['accent']
+        adaptive_size: True
+        pos_hint: {"center_x": .5, "center_y": .5}
+
+
+<NotaCard>:
+    orientation: "vertical"
+    md_bg_color: COLORS['surface']
+    radius: [14, 14, 14, 14]
+    padding: "14dp", "12dp"
+    spacing: "6dp"
+    size_hint_y: None
+    height: self.minimum_height
+    ripple_behavior: True
+
+    MDBoxLayout:
+        size_hint_y: None
+        height: "22dp"
+
+        MDCard:
+            md_bg_color: COLORS['surface']
+            line_color: root.categoria_cor
+            line_width: "1dp"
+            radius: [10, 10, 10, 10]
+            padding: "8dp", "2dp"
+            size_hint: None, None
+            size: categoria_label.texture_size[0] + dp(16), "20dp"
+
+            MDLabel:
+                id: categoria_label
+                text: root.categoria
+                bold: True
+                font_size: "10sp"
+                color: root.categoria_cor
+                halign: "center"
+                valign: "middle"
+                adaptive_size: True
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+        Widget:
+
+        MDLabel:
+            text: root.tempo
+            font_size: "11sp"
+            color: COLORS['text_dim']
+            halign: "right"
+            valign: "middle"
+            adaptive_size: True
+
+    MDLabel:
+        text: root.titulo_nota
+        bold: True
+        font_size: "16sp"
+        color: COLORS['text_bright']
+        size_hint_y: None
+        height: self.texture_size[1]
+        text_size: self.width, None
+        shorten: True
+        shorten_from: "right"
+
+    MDLabel:
+        text: root.solucao_preview
+        font_size: "13sp"
+        color: COLORS['text_dim']
+        size_hint_y: None
+        height: self.texture_size[1]
+        text_size: self.width, None
+        shorten: True
+        shorten_from: "right"
+
 
 <TicketListScreen>:
     md_bg_color: COLORS['bg']
 
-    MDBoxLayout:
-        orientation: "vertical"
-        padding: 0, app.inset_top, 0, 0
-
-        MDTopAppBar:
-            title: "NOTE MAX"
-            right_action_items: [["connection", lambda x: root.ir_para_integracoes()], ["plus", lambda x: root.ir_para_criar()]]
+    FloatLayout:
 
         MDBoxLayout:
-            size_hint_y: None
-            height: "56dp"
-            padding: "8dp"
+            orientation: "vertical"
+            padding: 0, app.inset_top, 0, 0
 
-            MDTextField:
-                id: busca_field
-                hint_text: "Buscar notas"
-                on_text_validate: root.buscar(self.text)
+            MDBoxLayout:
+                size_hint_y: None
+                height: "52dp"
+                padding: "16dp", "8dp"
+                spacing: "8dp"
 
-            MDIconButton:
-                icon: "magnify"
-                on_release: root.buscar(busca_field.text)
+                Image:
+                    source: "assets/icon.png"
+                    size_hint: None, None
+                    size: "28dp", "28dp"
 
-        ScrollView:
-            MDList:
-                id: tickets_list
+                MDLabel:
+                    text: "NOTEMAX"
+                    bold: True
+                    font_name: app.font_display
+                    font_size: "16sp"
+                    color: COLORS['text_bright']
+                    valign: "middle"
+                    adaptive_size: True
+
+                Widget:
+
+                MDIconButton:
+                    icon: "cog-outline"
+                    theme_text_color: "Custom"
+                    text_color: COLORS['text_dim']
+                    on_release: root.ir_para_integracoes()
+
+                MDBoxLayout:
+                    size_hint: None, None
+                    size: "34dp", "34dp"
+                    md_bg_color: COLORS['accent']
+                    radius: [17, 17, 17, 17]
+
+                    MDIconButton:
+                        icon: "plus"
+                        theme_text_color: "Custom"
+                        text_color: COLORS['bg']
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                        on_release: root.ir_para_criar()
+
+            MDBoxLayout:
+                size_hint_y: None
+                height: "44dp"
+                padding: "16dp", 0
+
+                MDTextField:
+                    id: busca_field
+                    hint_text: "Buscar por título, categoria, tag..."
+                    mode: "round"
+                    icon_left: "magnify"
+                    fill_color_normal: COLORS['surface']
+                    fill_color_focus: COLORS['surface']
+                    icon_left_color_normal: COLORS['text_dim']
+                    icon_left_color_focus: COLORS['accent']
+                    hint_text_color_normal: COLORS['text_dim']
+                    text_color_normal: COLORS['text']
+                    line_color_normal: (0, 0, 0, 0)
+                    line_color_focus: (0, 0, 0, 0)
+                    on_text: root.texto_buscar_mudou(self.text)
+                    on_text_validate: root.buscar(self.text)
+
+            MDBoxLayout:
+                id: chips_row
+                size_hint_y: None
+                height: "44dp"
+                padding: "16dp", "6dp"
+
+                ScrollView:
+                    do_scroll_y: False
+                    bar_width: 0
+
+                    MDBoxLayout:
+                        id: chips_categoria
+                        orientation: "horizontal"
+                        spacing: "8dp"
+                        size_hint_x: None
+                        width: self.minimum_width
+
+            ScrollView:
+                do_scroll_x: False
+
+                MDBoxLayout:
+                    id: notas_list
+                    orientation: "vertical"
+                    padding: "16dp", "4dp", "16dp", dp(88) + app.inset_bottom
+                    spacing: "10dp"
+                    size_hint_y: None
+                    height: self.minimum_height
+
+        MDFloatingActionButton:
+            icon: "plus"
+            md_bg_color: COLORS['accent']
+            text_color: COLORS['bg']
+            pos_hint: {"right": .95}
+            y: dp(20) + app.inset_bottom
+            on_release: root.ir_para_criar()

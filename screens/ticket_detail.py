@@ -25,6 +25,7 @@ class TicketDetailScreen(MDScreen):
     ticket_id = StringProperty("")
     local_only = BooleanProperty(False)
     sincronizado = BooleanProperty(True)
+    criado_em = StringProperty("")
 
     def on_pre_enter(self, *args):
         self.carregar_ticket()
@@ -39,6 +40,7 @@ class TicketDetailScreen(MDScreen):
         # cache_service.py) -- antes disso a nota existe só no cache
         # local, mesmo não sendo "somente no dispositivo".
         self.sincronizado = bool(ticket.sincronizado) if ticket else True
+        self.criado_em = ticket.criado_em if ticket else ""
         if ticket:
             self.ids.titulo_field.text = ticket.titulo
             self.ids.descricao_field.text = ticket.descricao
@@ -57,36 +59,61 @@ class TicketDetailScreen(MDScreen):
             categoria=self.ids.categoria_field.text,
             tags=[t.strip() for t in self.ids.tags_field.text.split(",") if t.strip()],
             local_only=self.local_only,
+            criado_em=self.criado_em,  # editar não deve mudar a data de criação
         )
 
     def salvar_edicao(self):
-        if self.local_only:
-            self._salvar_local()
-        else:
-            threading.Thread(target=self._salvar_thread, daemon=True).start()
-
-    def _salvar_local(self):
+        # IMPORTANTE: salva no cache local SEMPRE, antes de qualquer coisa
+        # -- é isso que faltava. Antes, uma nota "sincronizada com o
+        # Notion" só era salva DE VERDADE se a chamada à API do Notion
+        # desse certo; se falhasse (ou o database_id estivesse errado),
+        # a edição inteira era descartada e a nota voltava pro estado
+        # antigo na próxima vez que a tela abrisse -- exatamente o "não
+        # salva, volta do jeito que criei" relatado.
         cache_service = self.manager.cache_service
         ticket = self._ticket_atual()
-        ticket.sincronizado = True
-        ticket.local_only = True
-        cache_service.save_local(ticket)
-        mostrar_aviso("Nota salva no dispositivo")
+        ticket.local_only = self.local_only
 
-    def _salvar_thread(self):
+        if self.local_only:
+            ticket.sincronizado = True
+            cache_service.save_local(ticket)
+            self.sincronizado = True
+            mostrar_aviso("Nota salva no dispositivo")
+            return
+
+        ticket.sincronizado = False
+        cache_service.save_local(ticket)
+        self.sincronizado = False
+        mostrar_aviso("Alterações salvas no dispositivo, sincronizando com o Notion...")
+        threading.Thread(target=self._salvar_thread, args=(ticket,), daemon=True).start()
+
+    def _salvar_thread(self, ticket: Ticket):
         notion_service = self.manager.notion_service
+        cache_service = self.manager.cache_service
         try:
             notion_service.update_ticket(
-                self.ticket_id,
-                titulo=self.ids.titulo_field.text,
-                descricao=self.ids.descricao_field.text,
-                solucao=self.ids.solucao_field.text,
-                categoria=self.ids.categoria_field.text,
-                tags=[t.strip() for t in self.ids.tags_field.text.split(",") if t.strip()],
+                ticket.id,
+                titulo=ticket.titulo,
+                descricao=ticket.descricao,
+                solucao=ticket.solucao,
+                categoria=ticket.categoria,
+                tags=ticket.tags,
             )
-            Clock.schedule_once(lambda dt: mostrar_aviso("Ticket atualizado"))
-        except Exception:
-            Clock.schedule_once(lambda dt: mostrar_aviso("Falha ao atualizar (sem conexão?)"))
+            ticket.sincronizado = True
+            cache_service.save_local(ticket)
+            Clock.schedule_once(lambda dt: self._marcar_sincronizado(True))
+            Clock.schedule_once(lambda dt: mostrar_aviso("Sincronizado com o Notion"))
+        except Exception as e:
+            Clock.schedule_once(lambda dt: self._marcar_sincronizado(False))
+            Clock.schedule_once(
+                lambda dt: mostrar_aviso(f"Salvo no dispositivo -- não sincronizou com o Notion ({e})")
+            )
+
+    def _marcar_sincronizado(self, valor: bool):
+        # Só atualiza a tela se o usuário ainda estiver olhando essa
+        # mesma nota (evita sobrescrever o estado se ele já saiu daqui).
+        if self.manager.current == "ticket_detail":
+            self.sincronizado = valor
 
     def exportar_txt(self):
         threading.Thread(target=self._exportar_thread, args=("txt",), daemon=True).start()

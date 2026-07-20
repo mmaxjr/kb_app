@@ -14,6 +14,7 @@ class Ticket:
     tags: list[str] = field(default_factory=list)
     sincronizado: bool = False
     local_only: bool = False  # True = salva só no dispositivo, nunca sobe pro Notion
+    criado_em: str = ""  # ISO 8601 -- usado pro "há 2h / ontem / 3 dias" na lista
 
     @classmethod
     def from_notion_page(cls, page: dict) -> "Ticket":
@@ -44,6 +45,7 @@ class Ticket:
             categoria=_select("Categoria"),
             tags=_multi_select("Tags"),
             sincronizado=True,
+            criado_em=page.get("created_time", ""),
         )
 
     @classmethod
@@ -58,4 +60,5 @@ class Ticket:
             tags=row[5].split(",") if row[5] else [],
             sincronizado=bool(row[6]),
             local_only=bool(row[7]) if len(row) > 7 else False,
+            criado_em=row[8] if len(row) > 8 and row[8] else "",
         )

@@ -109,10 +109,16 @@ class IntegrationsScreen(MDScreen):
 
     def _tocar_card(self, integ_id: str):
         integrations_service = self.manager.integrations_service
-        if integrations_service.is_conectado(integ_id):
+        conectado = integrations_service.is_conectado(integ_id)
+        ja_ativo = integrations_service.get_destino_ativo() == integ_id
+        if conectado and not ja_ativo:
             integrations_service.set_destino_ativo(integ_id)
             self._popular_lista()
             return
+        # Não conectado, OU já é o destino ativo: nos dois casos abre o
+        # diálogo de conexão -- tocar de novo no card que já está ativo é
+        # o jeito de corrigir uma configuração errada (ex.: database_id
+        # do Notion) sem precisar desconectar e reconectar do zero.
         self._abrir_conexao(integ_id)
 
     def _abrir_conexao(self, integ_id: str):
@@ -127,28 +133,60 @@ class IntegrationsScreen(MDScreen):
 
     # -- Notion ---------------------------------------------------------
     def _abrir_dialogo_notion(self):
-        campo = MDTextField(hint_text="Token de integration do Notion")
-        conteudo = _caixa_dialogo([campo])
+        ja_conectado = self.manager.integrations_service.is_conectado("notion")
+        config_atual = self.manager.integrations_service.get_config("notion")
+
+        campo_token = MDTextField(
+            hint_text=(
+                "Token de integration (deixe em branco p/ manter o atual)"
+                if ja_conectado
+                else "Token de integration do Notion"
+            )
+        )
+        campo_db = MDTextField(
+            hint_text="ID do banco de dados do Notion",
+            text=config_atual.get("database_id", ""),
+        )
+        conteudo = _caixa_dialogo([campo_token, campo_db])
         self._dialog = MDDialog(
             title="Conectar Notion",
             type="custom",
             content_cls=conteudo,
-            buttons=[_botao("CANCELAR", self._fechar_dialogo), _botao("CONECTAR", lambda *a: self._confirmar_notion(campo.text))],
+            buttons=[
+                _botao("CANCELAR", self._fechar_dialogo),
+                _botao("CONECTAR", lambda *a: self._confirmar_notion(campo_token.text, campo_db.text)),
+            ],
         )
         self._dialog.open()
 
-    def _confirmar_notion(self, token: str):
+    def _confirmar_notion(self, token: str, database_id: str):
         token = (token or "").strip()
-        if not token:
+        database_id = (database_id or "").strip()
+
+        if not database_id:
+            mostrar_aviso(
+                "Informe o ID do banco de dados do Notion -- sem ele a "
+                "sincronização não funciona (fica só criando páginas soltas "
+                "num database que não existe)"
+            )
+            return
+
+        ja_tem_token = self.manager.notion_service.client is not None
+        if not token and not ja_tem_token:
             mostrar_aviso("Cole o token do Notion")
             return
-        senha = getattr(self.manager, "master_password", None)
-        if not senha:
-            mostrar_aviso("Sessão sem senha mestra em memória, desbloqueie de novo")
-            self._fechar_dialogo()
-            return
-        self.manager.crypto_service.save_secret("notion_token", token, senha)
-        self.manager.notion_service.set_token(token)
+
+        if token:
+            senha = getattr(self.manager, "master_password", None)
+            if not senha:
+                mostrar_aviso("Sessão sem senha mestra em memória, desbloqueie de novo")
+                self._fechar_dialogo()
+                return
+            self.manager.crypto_service.save_secret("notion_token", token, senha)
+            self.manager.notion_service.set_token(token)
+
+        self.manager.notion_service.set_database_id(database_id)
+        self.manager.integrations_service.set_config("notion", database_id=database_id)
         self.manager.integrations_service.set_conectado("notion", True)
         self.manager.integrations_service.set_destino_ativo("notion")
         self._fechar_dialogo()
