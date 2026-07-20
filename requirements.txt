@@ -1,4 +1,5 @@
 kivy
 kivymd
 notion-client
+httpx
 pyaes

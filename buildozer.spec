@@ -15,7 +15,14 @@ version = 0.1
 # Rust que já causou dois builds quebrados nesse projeto e pode até falhar
 # ao carregar em tempo real em alguns aparelhos (crash nativo, sem
 # traceback Python). pyaes é puro Python, zero risco de build/runtime.
-requirements = python3,kivy==2.3.1,kivymd==1.2.0,notion-client,pyaes,pillow
+#
+# httpx e sua cadeia de dependências (conferida com "pip install
+# notion-client" num venv limpo): anyio, certifi, exceptiongroup, h11,
+# httpcore, idna, typing_extensions. Listadas explicitamente porque o
+# buildozer não estava puxando o httpx sozinho a partir do
+# notion-client -- o app instalava, mas quebrava em runtime com
+# "ModuleNotFoundError: No module named 'httpx'".
+requirements = python3,kivy==2.3.1,kivymd==1.2.0,notion-client,httpx,httpcore,anyio,certifi,exceptiongroup,h11,idna,typing_extensions,pyaes,pillow
 
 orientation = portrait
 fullscreen = 0
