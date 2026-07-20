@@ -27,8 +27,11 @@ class TicketListScreen(MDScreen):
             tickets = [Ticket.from_notion_page(p) for p in resultado.get("results", [])]
             for t in tickets:
                 cache_service.save_local(t)
+            # Notas "somente no dispositivo" nunca existem no Notion, então
+            # não vêm nesse resultado — precisam ser mescladas de volta.
+            tickets += cache_service.get_local_only()
         except Exception:
-            # Sem internet ou erro na API: usa o cache local
+            # Sem internet ou erro na API: usa o cache local (Notion + local-only)
             tickets = cache_service.get_all()
 
         Clock.schedule_once(lambda dt: self._popular_lista(tickets))
@@ -41,9 +44,13 @@ class TicketListScreen(MDScreen):
     def _adicionar_item(self, ticket: Ticket):
         from kivymd.uix.list import TwoLineListItem
 
+        secondary = ticket.categoria or ""
+        if ticket.local_only:
+            secondary = (secondary + "  ·  somente no dispositivo").strip("  ·  ")
+
         item = TwoLineListItem(
             text=ticket.titulo or "(sem título)",
-            secondary_text=ticket.categoria or "",
+            secondary_text=secondary,
             on_release=lambda x, tid=ticket.id: self.abrir_detalhe(tid),
         )
         self.ids.tickets_list.add_widget(item)

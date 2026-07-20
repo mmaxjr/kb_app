@@ -1,6 +1,10 @@
 """
-Criar novo ticket. Salva local (SQLite) imediatamente e tenta
-sincronizar com o Notion em background.
+Criar novo ticket.
+
+Dois modos, escolhidos pelo switch "Salvar somente no dispositivo":
+- Desligado (padrão): salva local (SQLite) e tenta sincronizar com o
+  Notion em background.
+- Ligado: salva só no cache local, nunca tenta enviar ao Notion.
 """
 import threading
 import uuid
@@ -19,6 +23,8 @@ class TicketCreateScreen(MDScreen):
             Snackbar(text="Título é obrigatório").open()
             return
 
+        salvar_so_no_dispositivo = self.ids.local_only_switch.active
+
         ticket = Ticket(
             id=str(uuid.uuid4()),
             titulo=titulo,
@@ -26,14 +32,19 @@ class TicketCreateScreen(MDScreen):
             solucao=self.ids.solucao_field.text,
             categoria=self.ids.categoria_field.text,
             tags=[t.strip() for t in self.ids.tags_field.text.split(",") if t.strip()],
-            sincronizado=False,
+            sincronizado=salvar_so_no_dispositivo,  # local_only nunca fica "pendente"
+            local_only=salvar_so_no_dispositivo,
         )
 
         self.manager.cache_service.save_local(ticket)
         self._limpar_campos()
-        Snackbar(text="Ticket salvo localmente").open()
 
-        threading.Thread(target=self._sincronizar_thread, args=(ticket,), daemon=True).start()
+        if salvar_so_no_dispositivo:
+            Snackbar(text="Nota salva somente no dispositivo").open()
+        else:
+            Snackbar(text="Nota salva localmente, sincronizando com o Notion...").open()
+            threading.Thread(target=self._sincronizar_thread, args=(ticket,), daemon=True).start()
+
         self.manager.current = "ticket_list"
 
     def _sincronizar_thread(self, ticket: Ticket):
@@ -58,6 +69,7 @@ class TicketCreateScreen(MDScreen):
         self.ids.solucao_field.text = ""
         self.ids.categoria_field.text = ""
         self.ids.tags_field.text = ""
+        self.ids.local_only_switch.active = False
 
     def cancelar(self):
         self._limpar_campos()

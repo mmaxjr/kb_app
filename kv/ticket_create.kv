@@ -40,6 +40,21 @@
                     id: tags_field
                     hint_text: "Tags (separadas por vírgula)"
 
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: "48dp"
+                    spacing: "8dp"
+
+                    MDLabel:
+                        text: "Salvar somente no dispositivo (não sincroniza com o Notion)"
+                        color: COLORS['text_dim']
+                        font_size: "13sp"
+
+                    MDSwitch:
+                        id: local_only_switch
+                        pos_hint: {"center_y": .5}
+
                 MDRaisedButton:
                     text: "CRIAR NOTA"
                     pos_hint: {"center_x": .5}

@@ -40,7 +40,30 @@
                     id: tags_field
                     hint_text: "Tags (separadas por vírgula)"
 
+                MDLabel:
+                    text: "Salva somente no dispositivo" if root.local_only else "Sincronizada com o Notion"
+                    color: COLORS['accent'] if root.local_only else COLORS['text_dim']
+                    font_size: "12sp"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+
                 MDRaisedButton:
                     text: "SALVAR ALTERAÇÕES"
                     pos_hint: {"center_x": .5}
                     on_release: root.salvar_edicao()
+
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    spacing: "12dp"
+                    size_hint_y: None
+                    height: "48dp"
+
+                    MDRaisedButton:
+                        text: "EXPORTAR TXT"
+                        size_hint_x: 0.5
+                        on_release: root.exportar_txt()
+
+                    MDRaisedButton:
+                        text: "EXPORTAR PDF"
+                        size_hint_x: 0.5
+                        on_release: root.exportar_pdf()

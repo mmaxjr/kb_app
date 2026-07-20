@@ -13,6 +13,7 @@ class Ticket:
     categoria: str = ""
     tags: list[str] = field(default_factory=list)
     sincronizado: bool = False
+    local_only: bool = False  # True = salva só no dispositivo, nunca sobe pro Notion
 
     @classmethod
     def from_notion_page(cls, page: dict) -> "Ticket":
@@ -56,4 +57,5 @@ class Ticket:
             categoria=row[4],
             tags=row[5].split(",") if row[5] else [],
             sincronizado=bool(row[6]),
+            local_only=bool(row[7]) if len(row) > 7 else False,
         )
