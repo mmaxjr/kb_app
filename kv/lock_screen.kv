@@ -3,100 +3,118 @@
 <LockScreen>:
     md_bg_color: COLORS['bg']
 
-    MDBoxLayout:
-        orientation: "vertical"
-        padding: "32dp"
-        spacing: "16dp"
+    ScrollView:
+        do_scroll_x: False
 
-        Widget:
-            size_hint_y: 0.06
-
-        Image:
-            source: "assets/icon.png"
-            size_hint: None, None
-            size: "88dp", "88dp"
-            pos_hint: {"center_x": .5}
-
-        BoxLayout:
-            orientation: "horizontal"
-            size_hint_y: None
-            height: "44dp"
-            pos_hint: {"center_x": .5}
-
-            MDLabel:
-                text: "NOTE"
-                halign: "right"
-                font_style: "H4"
-                bold: True
-                font_name: app.font_display
-                color: COLORS['text_bright']
-
-            MDLabel:
-                text: "MAX"
-                halign: "left"
-                font_style: "H4"
-                bold: True
-                font_name: app.font_display
-                color: COLORS['accent']
-
-        MDLabel:
-            text: "KNOWLEDGE BASE"
-            halign: "center"
-            font_name: app.font_mono
-            font_size: "12sp"
-            color: COLORS['text_dim']
-            size_hint_y: None
-            height: self.texture_size[1]
-
-        Widget:
-            size_hint_y: 0.04
-
-        # --- Desbloquear (quando já existe token salvo) ---
         MDBoxLayout:
-            id: unlock_box
             orientation: "vertical"
-            spacing: "16dp"
-
-            MDTextField:
-                id: password_field
-                hint_text: "Senha mestra"
-                password: True
-
-            MDRaisedButton:
-                text: "DESBLOQUEAR"
-                pos_hint: {"center_x": .5}
-                on_release: root.unlock(password_field.text)
-
-        # --- Primeiro acesso (configurar senha; token do Notion é opcional) ---
-        MDBoxLayout:
-            id: setup_box
-            orientation: "vertical"
+            padding: "32dp", "28dp", "32dp", "24dp"
             spacing: "14dp"
+            size_hint_y: None
+            height: self.minimum_height
+
+            Image:
+                source: "assets/icon.png"
+                size_hint: None, None
+                size: "76dp", "76dp"
+                pos_hint: {"center_x": .5}
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint_y: None
+                height: "36dp"
+                pos_hint: {"center_x": .5}
+
+                MDLabel:
+                    text: "NOTE"
+                    halign: "right"
+                    font_style: "H5"
+                    bold: True
+                    font_name: app.font_display
+                    color: COLORS['text_bright']
+
+                MDLabel:
+                    text: "MAX"
+                    halign: "left"
+                    font_style: "H5"
+                    bold: True
+                    font_name: app.font_display
+                    color: COLORS['accent']
 
             MDLabel:
-                text: "Primeiro acesso: crie uma senha mestra. O token do Notion é opcional -- sem ele, o app funciona só com armazenamento no dispositivo."
+                text: "KNOWLEDGE BASE"
                 halign: "center"
+                font_name: app.font_mono
+                font_size: "11sp"
                 color: COLORS['text_dim']
-                text_size: self.width, None
                 size_hint_y: None
                 height: self.texture_size[1]
 
-            MDTextField:
-                id: new_password_field
-                hint_text: "Nova senha mestra"
-                password: True
+            # --- Desbloquear (quando já existe senha configurada) ---
+            MDBoxLayout:
+                id: unlock_box
+                orientation: "vertical"
+                spacing: "14dp"
+                size_hint_y: None
+                height: self.minimum_height
+                padding: 0, "12dp", 0, 0
 
-            MDTextField:
-                id: new_password_confirm_field
-                hint_text: "Confirme a senha mestra"
-                password: True
+                MDTextField:
+                    id: password_field
+                    hint_text: "Senha mestra"
+                    password: True
+                    size_hint_y: None
+                    height: "52dp"
 
-            MDTextField:
-                id: token_field
-                hint_text: "Token de integration do Notion (opcional)"
-                password: True
+                MDRaisedButton:
+                    text: "DESBLOQUEAR"
+                    pos_hint: {"center_x": .5}
+                    size_hint_y: None
+                    height: "44dp"
+                    on_release: root.unlock(password_field.text)
 
-            MDRaisedButton:
-                text: "SALVAR E CONTINUAR"
-                pos_hint: {"center_x": .5}
-                on_release: root.setup(token_field.text, new_password_field.text, new_password_confirm_field.text)
+            # --- Primeiro acesso (senha nova; token do Notion é opcional) ---
+            MDBoxLayout:
+                id: setup_box
+                orientation: "vertical"
+                spacing: "12dp"
+                size_hint_y: None
+                height: self.minimum_height
+                padding: 0, "8dp", 0, 0
+
+                MDLabel:
+                    text: "Primeiro acesso: crie uma senha mestra. O token do Notion é opcional -- sem ele, o app funciona só com armazenamento no dispositivo."
+                    halign: "center"
+                    color: COLORS['text_dim']
+                    font_size: "13sp"
+                    text_size: self.width, None
+                    size_hint_y: None
+                    height: self.texture_size[1]
+
+                MDTextField:
+                    id: new_password_field
+                    hint_text: "Nova senha mestra"
+                    password: True
+                    size_hint_y: None
+                    height: "52dp"
+
+                MDTextField:
+                    id: new_password_confirm_field
+                    hint_text: "Confirme a senha mestra"
+                    password: True
+                    size_hint_y: None
+                    height: "52dp"
+
+                MDTextField:
+                    id: token_field
+                    hint_text: "Token de integration do Notion (opcional)"
+                    password: True
+                    size_hint_y: None
+                    height: "52dp"
+
+                MDRaisedButton:
+                    text: "SALVAR E CONTINUAR"
+                    pos_hint: {"center_x": .5}
+                    size_hint_y: None
+                    height: "44dp"
+                    on_release: root.setup(token_field.text, new_password_field.text, new_password_confirm_field.text)

@@ -27,7 +27,19 @@ COLORS = {
     "text_bright": _hex("F4F7F9"),  # texto de destaque/headings
     "text_dim": _hex("7C8A9A"),     # texto secundário
     "border": _hex("FFFFFF", 0.08), # bordas sutis sobre a superfície
+    "roxo": _hex("C792EA"),         # acento extra (ícone do Obsidian)
 }
+
+# Paleta rotativa pros "chips" de categoria (tela de notas). Cada
+# categoria recebe uma cor de forma determinística (mesmo nome sempre
+# cai na mesma cor), calculada em utils/format.py::cor_categoria.
+CHIP_COLORS = [
+    _hex("00E6B8"),  # teal (acento)
+    _hex("FFB454"),  # laranja (alerta)
+    _hex("7C9CF5"),  # azul
+    _hex("C792EA"),  # roxo
+    _hex("5DF5D6"),  # verde-água claro
+]
 
 # Nomes de fonte registrados em main.py (com fallback silencioso caso os
 # arquivos .ttf não estejam presentes no build).

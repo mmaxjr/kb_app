@@ -11,16 +11,16 @@ import uuid
 
 from kivy.clock import Clock
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.snackbar import Snackbar
 
 from models.ticket import Ticket
+from utils.ui import mostrar_aviso
 
 
 class TicketCreateScreen(MDScreen):
     def criar_ticket(self):
         titulo = self.ids.titulo_field.text.strip()
         if not titulo:
-            Snackbar(text="Título é obrigatório").open()
+            mostrar_aviso("Título é obrigatório")
             return
 
         salvar_so_no_dispositivo = self.ids.local_only_switch.active
@@ -40,9 +40,9 @@ class TicketCreateScreen(MDScreen):
         self._limpar_campos()
 
         if salvar_so_no_dispositivo:
-            Snackbar(text="Nota salva somente no dispositivo").open()
+            mostrar_aviso("Nota salva somente no dispositivo")
         else:
-            Snackbar(text="Nota salva localmente, sincronizando com o Notion...").open()
+            mostrar_aviso("Nota salva localmente, sincronizando com o Notion...")
             threading.Thread(target=self._sincronizar_thread, args=(ticket,), daemon=True).start()
 
         self.manager.current = "ticket_list"

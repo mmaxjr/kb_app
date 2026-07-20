@@ -39,9 +39,13 @@ def _write_crash_log(tb: str, app_name: str = "notemax"):
 _IMPORT_ERROR = None
 
 try:
+    from kivy.base import ExceptionHandler, ExceptionManager
     from kivy.core.text import LabelBase
     from kivy.lang import Builder
     from kivy.core.window import Window
+    from kivy.uix.label import Label as _KivyLabel
+    from kivy.uix.popup import Popup
+    from kivy.uix.scrollview import ScrollView as _KivyScrollView
     from kivymd.app import MDApp
     from kivymd.uix.label import MDLabel
     from kivymd.uix.screenmanager import MDScreenManager
@@ -51,15 +55,65 @@ try:
     from screens.ticket_list import TicketListScreen
     from screens.ticket_detail import TicketDetailScreen
     from screens.ticket_create import TicketCreateScreen
+    from screens.integrations import IntegrationsScreen
 
     from services.crypto_service import CryptoService
     from services.notion_service import NotionService
     from services.cache_service import CacheService
+    from services.integrations_service import IntegrationsService
 
     from theme import COLORS, FONT_DISPLAY, FONT_MONO
 except Exception:
     _IMPORT_ERROR = traceback.format_exc()
     _write_crash_log(_IMPORT_ERROR)
+
+
+def _mostrar_popup_erro(tb: str):
+    """Mostra o traceback numa janela que fica aberta até o usuário
+    fechar, pra dar pra tirar print. Usa só widgets Kivy puros (Popup,
+    Label, ScrollView) -- não depende do KivyMD, então funciona mesmo
+    se o erro tiver acontecido dentro de algo do KivyMD."""
+    label = _KivyLabel(
+        text="Erro inesperado:\n\n" + tb,
+        size_hint_y=None,
+        halign="left",
+        valign="top",
+        color=(1, 1, 1, 1),
+    )
+    label.bind(texture_size=lambda inst, val: setattr(label, "height", val[1]))
+    label.bind(width=lambda inst, val: setattr(label, "text_size", (val, None)))
+
+    scroll = _KivyScrollView(do_scroll_x=False)
+    scroll.add_widget(label)
+
+    popup = Popup(
+        title="Erro no NOTE MAX (tire um print disso e me manda)",
+        content=scroll,
+        size_hint=(0.95, 0.85),
+    )
+    popup.open()
+
+
+if _IMPORT_ERROR is None:
+
+    class _NoteMaxExceptionHandler(ExceptionHandler):
+        """Pega qualquer exceção não tratada que aconteça DEPOIS do app
+        já estar rodando -- clique de botão, transição de tela, etc.
+        Sem isso, um erro num on_release (como o de salvar a senha ou
+        criar uma nota) simplesmente derruba o app inteiro sem
+        explicação, porque o Kivy não tem tratamento de exceção
+        automático pra esses callbacks."""
+
+        def handle_exception(self, inst):
+            tb = traceback.format_exc()
+            _write_crash_log(tb)
+            try:
+                _mostrar_popup_erro(tb)
+            except Exception:
+                pass
+            return ExceptionManager.PASS
+
+    ExceptionManager.add_handler(_NoteMaxExceptionHandler())
 
 
 def _register_brand_fonts():
@@ -161,6 +215,9 @@ else:
             self.cache_service = CacheService(
                 db_path=os.path.join(self.user_data_dir, "cache.db")
             )
+            self.integrations_service = IntegrationsService(
+                store_path=os.path.join(self.user_data_dir, "integrations.json")
+            )
 
             # Carrega os arquivos .kv (theme.kv primeiro: define as regras
             # globais de cor/fonte usadas pelos demais)
@@ -170,11 +227,14 @@ else:
             Builder.load_file("kv/ticket_list.kv")
             Builder.load_file("kv/ticket_detail.kv")
             Builder.load_file("kv/ticket_create.kv")
+            Builder.load_file("kv/integrations.kv")
 
             sm = MDScreenManager()
             sm.notion_service = self.notion_service
             sm.crypto_service = self.crypto_service
             sm.cache_service = self.cache_service
+            sm.integrations_service = self.integrations_service
+            sm.master_password = None
 
             lock = LockScreen(name="lock_screen")
             lock.crypto_service = self.crypto_service
@@ -184,6 +244,14 @@ else:
             sm.add_widget(TicketListScreen(name="ticket_list"))
             sm.add_widget(TicketDetailScreen(name="ticket_detail"))
             sm.add_widget(TicketCreateScreen(name="ticket_create"))
+            sm.add_widget(IntegrationsScreen(name="integrations"))
+
+            # Se o Notion já tinha um token salvo antes desta versão (que
+            # introduziu o IntegrationsService), marca ele como conectado
+            # pra tela de Integrações refletir o estado real assim que o
+            # usuário desbloquear.
+            if self.crypto_service.has_saved_token():
+                self.integrations_service.set_conectado("notion", True)
 
             # A splash animada (dentro do app) aparece primeiro e some
             # sozinha depois de ~1.6s, indo pra tela de senha.

@@ -32,24 +32,28 @@ class CryptoService:
         # SHA-256 -> 32 bytes -> chave AES-256
         return hashlib.sha256(master_password.encode("utf-8")).digest()
 
-    def has_saved_token(self) -> bool:
-        return self.store.exists("notion_token")
+    # -- API genérica: usada por qualquer segredo de integração (token do
+    # Notion, chave anon do Supabase, etc.) -- cada um fica guardado sob
+    # sua própria chave dentro do secure_data.json, todos cifrados com a
+    # mesma senha mestra.
+    def has_secret(self, nome: str) -> bool:
+        return self.store.exists(nome)
 
-    def save_notion_token(self, token: str, master_password: str) -> None:
+    def save_secret(self, nome: str, valor: str, master_password: str) -> None:
         key = self._derive_key(master_password)
         iv = os.urandom(16)
         counter = pyaes.Counter(initial_value=int.from_bytes(iv, "big"))
         aes = pyaes.AESModeOfOperationCTR(key, counter=counter)
-        plaintext = token.encode("utf-8") + _MAGIC
+        plaintext = valor.encode("utf-8") + _MAGIC
         ciphertext = aes.encrypt(plaintext)
         payload = base64.urlsafe_b64encode(iv + ciphertext).decode("ascii")
-        self.store.put("notion_token", value=payload)
+        self.store.put(nome, value=payload)
 
-    def load_notion_token(self, master_password: str) -> str | None:
-        if not self.store.exists("notion_token"):
+    def load_secret(self, nome: str, master_password: str) -> str | None:
+        if not self.store.exists(nome):
             return None
         try:
-            raw = base64.urlsafe_b64decode(self.store.get("notion_token")["value"])
+            raw = base64.urlsafe_b64decode(self.store.get(nome)["value"])
             iv, ciphertext = raw[:16], raw[16:]
             key = self._derive_key(master_password)
             counter = pyaes.Counter(initial_value=int.from_bytes(iv, "big"))
@@ -60,3 +64,18 @@ class CryptoService:
             return None  # senha errada: decifra, mas vira lixo sem o marcador
         except Exception:
             return None  # senha errada / dado corrompido
+
+    def delete_secret(self, nome: str) -> None:
+        if self.store.exists(nome):
+            self.store.delete(nome)
+
+    # -- Atalhos específicos do Notion, mantidos por compatibilidade com o
+    # resto do app (lock_screen, main.py) -- por baixo usam a API genérica.
+    def has_saved_token(self) -> bool:
+        return self.has_secret("notion_token")
+
+    def save_notion_token(self, token: str, master_password: str) -> None:
+        self.save_secret("notion_token", token, master_password)
+
+    def load_notion_token(self, master_password: str) -> str | None:
+        return self.load_secret("notion_token", master_password)

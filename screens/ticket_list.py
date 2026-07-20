@@ -6,9 +6,9 @@ import threading
 
 from kivy.clock import Clock
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.snackbar import Snackbar
 
 from models.ticket import Ticket
+from utils.ui import mostrar_aviso
 
 
 class TicketListScreen(MDScreen):
@@ -73,8 +73,11 @@ class TicketListScreen(MDScreen):
             tickets = [Ticket.from_notion_page(p) for p in resultado.get("results", [])]
         except Exception:
             tickets = []
-            Clock.schedule_once(lambda dt: Snackbar(text="Sem conexão para buscar").open())
+            Clock.schedule_once(lambda dt: mostrar_aviso("Sem conexão para buscar"))
         Clock.schedule_once(lambda dt: self._popular_lista(tickets))
 
     def ir_para_criar(self):
         self.manager.current = "ticket_create"
+
+    def ir_para_integracoes(self):
+        self.manager.current = "integrations"

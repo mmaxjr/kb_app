@@ -1,0 +1,126 @@
+#:import COLORS theme.COLORS
+
+<IntegrationCard>:
+    orientation: "horizontal"
+    md_bg_color: COLORS['surface']
+    radius: [16, 16, 16, 16]
+    size_hint_y: None
+    height: "76dp"
+    padding: "14dp", "12dp"
+    spacing: "12dp"
+    ripple_behavior: True
+    line_color: COLORS['accent'] if root.selecionado else (0, 0, 0, 0)
+    line_width: "1.6dp"
+
+    MDBoxLayout:
+        size_hint: None, None
+        size: "44dp", "44dp"
+        pos_hint: {"center_y": .5}
+        md_bg_color: COLORS['surface_alt']
+        radius: [12, 12, 12, 12]
+
+        MDIcon:
+            icon: root.icone
+            theme_text_color: "Custom"
+            text_color: COLORS.get(root.icone_cor_hex, COLORS['accent'])
+            pos_hint: {"center_x": .5, "center_y": .5}
+            halign: "center"
+
+    MDBoxLayout:
+        orientation: "vertical"
+        spacing: "2dp"
+
+        MDLabel:
+            text: root.nome
+            bold: True
+            font_size: "15sp"
+            color: COLORS['text_bright']
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        MDLabel:
+            text: root.subtitulo
+            font_size: "12sp"
+            color: COLORS['text_dim']
+            size_hint_y: None
+            height: self.texture_size[1]
+
+    MDIcon:
+        icon: "check-circle" if root.selecionado else "checkbox-blank-circle-outline"
+        theme_text_color: "Custom"
+        text_color: COLORS['accent'] if root.selecionado else COLORS['text_dim']
+        size_hint: None, None
+        size: "28dp", "28dp"
+        pos_hint: {"center_y": .5}
+        halign: "center"
+
+
+<IntegrationsScreen>:
+    md_bg_color: COLORS['bg']
+
+    MDBoxLayout:
+        orientation: "vertical"
+
+        MDTopAppBar:
+            title: "Integrações"
+            left_action_items: [["arrow-left", lambda x: root.voltar()]]
+            elevation: 0
+            md_bg_color: COLORS['bg']
+
+        ScrollView:
+            do_scroll_x: False
+
+            MDBoxLayout:
+                id: conteudo
+                orientation: "vertical"
+                padding: "16dp"
+                spacing: "12dp"
+                size_hint_y: None
+                height: self.minimum_height
+
+                MDBoxLayout:
+                    id: integrations_list
+                    orientation: "vertical"
+                    spacing: "12dp"
+                    size_hint_y: None
+                    height: self.minimum_height
+
+                MDBoxLayout:
+                    orientation: "vertical"
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: "14dp"
+                    spacing: "6dp"
+                    md_bg_color: COLORS['surface_alt']
+                    radius: [12, 12, 12, 12]
+
+                    MDLabel:
+                        text: "ESTRUTURA DE PASTAS (NUVEM)"
+                        font_name: app.font_mono
+                        font_size: "10sp"
+                        bold: True
+                        color: COLORS['accent']
+                        size_hint_y: None
+                        height: self.texture_size[1]
+
+                    MDLabel:
+                        id: pastas_preview
+                        text: ""
+                        font_name: app.font_mono
+                        font_size: "11sp"
+                        color: COLORS['text_dim']
+                        size_hint_y: None
+                        height: self.texture_size[1]
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: "64dp"
+            padding: "16dp", "8dp"
+
+            MDRaisedButton:
+                text: "CONECTAR NOVA INTEGRAÇÃO"
+                size_hint: 1, 1
+                md_bg_color: COLORS['accent']
+                text_color: COLORS['bg']
+                font_name: app.font_mono
+                on_release: root.conectar_nova()

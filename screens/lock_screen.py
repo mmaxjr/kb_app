@@ -8,7 +8,8 @@ o campo em branco, o app funciona só com armazenamento no dispositivo
 normalmente. Dá pra voltar aqui depois e reconfigurar.
 """
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.snackbar import Snackbar
+
+from utils.ui import mostrar_aviso
 
 
 class LockScreen(MDScreen):
@@ -18,51 +19,56 @@ class LockScreen(MDScreen):
         self._mostrar_apenas(self.crypto_service.has_saved_token())
 
     def _mostrar_apenas(self, mostrar_unlock: bool):
-        """Alterna entre unlock_box e setup_box. Fundamental: o box
-        escondido precisa ficar com altura 0 também, senão ele continua
-        ocupando espaço no layout vertical mesmo invisível (era por
-        isso que os campos apareciam "flutuando" muito mais pra baixo,
-        com um vão enorme em branco no meio da tela)."""
+        """Alterna entre unlock_box e setup_box. Os dois já têm
+        `size_hint_y: None` e `height: self.minimum_height` fixados no
+        .kv (cada campo tem altura própria), então aqui só zero a
+        altura do box escondido -- sem isso ele continuaria ocupando
+        espaço no layout mesmo invisível (era por isso que os campos
+        apareciam bem mais pra baixo, com um vão enorme no meio)."""
         unlock_box = self.ids.unlock_box
         setup_box = self.ids.setup_box
 
         unlock_box.opacity = 1 if mostrar_unlock else 0
         unlock_box.disabled = not mostrar_unlock
-        unlock_box.size_hint_y = None if not mostrar_unlock else 1
-        if not mostrar_unlock:
-            unlock_box.height = 0
+        unlock_box.height = unlock_box.minimum_height if mostrar_unlock else 0
 
         setup_box.opacity = 0 if mostrar_unlock else 1
         setup_box.disabled = mostrar_unlock
-        setup_box.size_hint_y = None if mostrar_unlock else 1
-        if mostrar_unlock:
-            setup_box.height = 0
+        setup_box.height = setup_box.minimum_height if not mostrar_unlock else 0
 
     def unlock(self, password: str):
         token = self.crypto_service.load_notion_token(password)
         if token is None:
-            Snackbar(text="Senha incorreta").open()
+            mostrar_aviso("Senha incorreta")
             return
         if token:
             self.manager.notion_service.set_token(token)
+        # Guarda a senha mestra em memória pelo resto da sessão -- é o que
+        # permite salvar NOVOS segredos depois (ex.: conectar o Supabase
+        # na tela de Integrações) sem pedir a senha de novo a cada ação.
+        # Nunca é persistida em disco, só fica na RAM enquanto o app roda.
+        self.manager.master_password = password
         self.manager.current = "ticket_list"
 
     def setup(self, token: str, password: str, password_confirm: str):
         token = (token or "").strip()
 
         if not password:
-            Snackbar(text="Crie uma senha mestra").open()
+            mostrar_aviso("Crie uma senha mestra")
             return
         if password != password_confirm:
-            Snackbar(text="As senhas não coincidem").open()
+            mostrar_aviso("As senhas não coincidem")
             return
 
         self.crypto_service.save_notion_token(token, password)
+        self.manager.master_password = password
 
         if token:
             self.manager.notion_service.set_token(token)
-            Snackbar(text="Configurado com o Notion").open()
+            self.manager.integrations_service.set_conectado("notion", True)
+            self.manager.integrations_service.set_destino_ativo("notion")
+            mostrar_aviso("Configurado com o Notion")
         else:
-            Snackbar(text="Configurado para uso somente no dispositivo").open()
+            mostrar_aviso("Configurado para uso somente no dispositivo")
 
         self.manager.current = "ticket_list"

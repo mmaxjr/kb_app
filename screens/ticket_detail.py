@@ -15,10 +15,10 @@ from kivy.clock import Clock
 from kivy.properties import BooleanProperty, StringProperty
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
-from kivymd.uix.snackbar import Snackbar
 
 from models.ticket import Ticket
 from services.export_service import export_pdf, export_txt
+from utils.ui import mostrar_aviso
 
 
 class TicketDetailScreen(MDScreen):
@@ -65,7 +65,7 @@ class TicketDetailScreen(MDScreen):
         ticket.sincronizado = True
         ticket.local_only = True
         cache_service.save_local(ticket)
-        Snackbar(text="Nota salva no dispositivo").open()
+        mostrar_aviso("Nota salva no dispositivo")
 
     def _salvar_thread(self):
         notion_service = self.manager.notion_service
@@ -78,9 +78,9 @@ class TicketDetailScreen(MDScreen):
                 categoria=self.ids.categoria_field.text,
                 tags=[t.strip() for t in self.ids.tags_field.text.split(",") if t.strip()],
             )
-            Clock.schedule_once(lambda dt: Snackbar(text="Ticket atualizado").open())
+            Clock.schedule_once(lambda dt: mostrar_aviso("Ticket atualizado"))
         except Exception:
-            Clock.schedule_once(lambda dt: Snackbar(text="Falha ao atualizar (sem conexão?)").open())
+            Clock.schedule_once(lambda dt: mostrar_aviso("Falha ao atualizar (sem conexão?)"))
 
     def exportar_txt(self):
         threading.Thread(target=self._exportar_thread, args=("txt",), daemon=True).start()
@@ -97,10 +97,10 @@ class TicketDetailScreen(MDScreen):
                 path = export_txt(ticket, dest_dir)
             else:
                 path = export_pdf(ticket, dest_dir)
-            Clock.schedule_once(lambda dt: Snackbar(text=f"Exportado: {path}").open())
+            Clock.schedule_once(lambda dt: mostrar_aviso(f"Exportado: {path}"))
         except Exception as e:
             msg = f"Falha ao exportar {formato.upper()}: {e}"
-            Clock.schedule_once(lambda dt: Snackbar(text=msg).open())
+            Clock.schedule_once(lambda dt: mostrar_aviso(msg))
 
     def voltar(self):
         self.manager.current = "ticket_list"
